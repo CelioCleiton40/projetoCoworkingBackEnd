@@ -7,11 +7,13 @@ class UserService {
   }
 
   public async getUserById(id: number): Promise<User | null> {
-    return await UserModel.getById(id);
+    const user = await UserModel.getById(id);
+    return user || null;
   }
 
   public async updateUser(id: number, data: Partial<User>): Promise<User | null> {
-    return await UserModel.update(id, data);
+    const user = await UserModel.update(id, data);
+    return user || null;
   }
 
   public async deleteUser(id: number): Promise<void> {

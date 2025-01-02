@@ -1,5 +1,8 @@
-import sqlite3 from 'sqlite3';
-import path from 'path';
+import sqlite3 from "sqlite3";
+import path from "path";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 interface DatabaseInterface {
   run(sql: string, params?: any[]): Promise<{ id: number }>;
@@ -13,12 +16,15 @@ class DatabaseConnection implements DatabaseInterface {
   private db: sqlite3.Database;
 
   constructor() {
-    const dbPath = path.resolve(__dirname, '../../database.sqlite');
+    const dbPath = path.resolve(
+      __dirname,
+      process.env.DATABASE_PATH || "../../database.sqlite"
+    );
     this.db = new sqlite3.Database(dbPath, (err) => {
       if (err) {
-        console.error('Erro ao conectar ao banco de dados:', err);
+        console.error("Erro ao conectar ao banco de dados:", err);
       } else {
-        console.log('Conectado ao banco de dados SQLite');
+        console.log("Conectado ao banco de dados SQLite");
         this.initDatabase();
       }
     });
@@ -82,7 +88,7 @@ class DatabaseConnection implements DatabaseInterface {
         stock INTEGER NOT NULL CHECK(stock >= 0),
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
-      )`
+      )`,
     ];
 
     for (const query of queries) {

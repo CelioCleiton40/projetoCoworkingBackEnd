@@ -1,16 +1,13 @@
 import express from 'express';
-import { setupSwagger } from './swagger'; // caminho para o arquivo swagger.ts
+import cors from 'cors';
 import routes from './routes'; // Certifique-se de que este é o caminho correto para suas rotas
 
 const app = express();
+
+app.use(cors()); // Middleware para habilitar CORS
 app.use(express.json()); // Middleware para analisar corpos de requisição JSON
 
-setupSwagger(app); // Configurações do Swagger para documentação da API
+// Usa as rotas definidas no arquivo index.ts da pasta routes
+app.use('/api', routes);
 
-app.use('/api', routes); // Usa as rotas definidas no arquivo index.ts da pasta routes
-
-const PORT = process.env.PORT || 3000; // Define a porta do servidor
-app.listen(PORT, () => {
-  console.log(`Servidor rodando na porta ${PORT}`); // Mensagem de confirmação de que o servidor está rodando
-  console.log(`Documentação da API disponível em http://localhost:${PORT}/api-docs`); // Link para a documentação da API
-});
+export default app;
