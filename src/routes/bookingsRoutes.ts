@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { authenticateToken, authorizeRole } from '../middlewares/auth';
+import { authenticateToken, authorizeRoles } from '../middlewares/auth';
 import { validate } from '../middlewares/validation';
 import Joi from 'joi';
 
@@ -67,7 +67,7 @@ const router = Router();
 router.post(
   '/bookings',
   authenticateToken,
-  authorizeRole(['admin', 'receptionist']),
+  authorizeRoles(['admin', 'receptionist']),
   validate({
     body: Joi.object({
       customerName: Joi.string().min(3).max(50).required(),
@@ -143,7 +143,7 @@ router.get('/bookings/:id', authenticateToken, (req, res) => {
 router.put(
   '/bookings/:id',
   authenticateToken,
-  authorizeRole(['admin', 'receptionist']),
+  authorizeRoles(['admin', 'receptionist']),
   validate({
     body: Joi.object({
       customerName: Joi.string().min(3).max(50).optional(),
@@ -178,7 +178,7 @@ router.put(
  *       404:
  *         description: Reserva não encontrada
  */
-router.delete('/bookings/:id', authenticateToken, authorizeRole(['admin']), (req, res) => {
+router.delete('/bookings/:id', authenticateToken, authorizeRoles(['admin']), (req, res) => {
   // Lógica para deletar uma reserva pelo ID
   const bookingId = req.params.id;
   res.json({ message: `Reserva com ID ${bookingId} deletada com sucesso` });

@@ -1,16 +1,19 @@
 import bcrypt from 'bcryptjs';
 import dotenv from 'dotenv';
+import logger from '../utils/logger'; // Certifique-se de importar seu logger corretamente
 
 dotenv.config();
+
+const costString = process.env.BCRYPT_COST;
+if (!costString || isNaN(Number(costString))) {
+    logger.error('BCRYPT_COST precisa ser um número inteiro positivo no arquivo .env');
+    throw new Error('BCRYPT_COST precisa ser um número inteiro positivo no arquivo .env'); // Lança um erro na inicialização
+}
 
 export class HashManager {
     private readonly cost: number;
 
     constructor() {
-        const costString = process.env.BCRYPT_COST;
-        if (!costString || isNaN(Number(costString))) {
-            throw new Error('BCRYPT_COST precisa ser um número inteiro positivo no arquivo .env');
-        }
         this.cost = Number(costString);
     }
 
@@ -26,7 +29,7 @@ export class HashManager {
             return isMatch;
         } catch (error) {
             // Tratar erros de comparação (ex: hash inválido)
-            console.error('Erro ao comparar hash:', error);
+            logger.error('Erro ao comparar hash:', error);
             return false; // Ou lance um erro específico
         }
     }

@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { TokenPayload } from '../types';
 import { UnauthorizedError, ForbiddenError } from '../err/UnauthorizedError'; // Importe o erro correto
-import  logger from '../utils/logger';
+import logger from '../utils/logger';
 
 interface AuthenticatedRequest extends Request {
     user?: TokenPayload;

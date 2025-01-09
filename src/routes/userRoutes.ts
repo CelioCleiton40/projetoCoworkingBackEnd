@@ -1,15 +1,15 @@
-import { Router, Request, Response, NextFunction } from 'express';
-import Joi from 'joi';
-import { authenticateToken, authorizeAdmin } from '../middlewares/auth';
-import { validate } from '../middlewares/validation';
-import { UserService } from '../services/UserService';
-import { UserDatabase } from '../config/UserDataBase';
-import { IdGenerator } from '../middlewares/IdGenerator';
-import { TokenManager } from '../middlewares/TokenManager';
-import { HashManager } from '../middlewares/hashmanager';
-import { SignUpDTO } from '../dtos/userDTO';
-import { NotFoundError } from '../err/NotFoundError';
-import logger from '../utils/logger'; // Import the default export
+import { Router, Request, Response, NextFunction } from "express";
+import Joi from "joi";
+import { authenticateToken, authorizeAdmin } from "../middlewares/auth";
+import { validate } from "../middlewares/validation";
+import { UserService } from "../services/UserService";
+import { UserDatabase } from "../config/UserDataBase";
+import { IdGenerator } from "../middlewares/IdGenerator";
+import { TokenManager } from "../middlewares/TokenManager";
+import { HashManager } from "../middlewares/hashmanager";
+import { SignUpDTO } from "../dtos/userDTO";
+import { NotFoundError } from "../err/NotFoundError";
+import logger from "../utils/logger";
 
 const router = Router();
 
@@ -18,7 +18,12 @@ const idGenerator = new IdGenerator();
 const tokenManager = new TokenManager();
 const hashManager = new HashManager();
 
-const userService = new UserService(userDatabase, idGenerator, tokenManager, hashManager);
+const userService = new UserService(
+  userDatabase,
+  idGenerator,
+  tokenManager,
+  hashManager
+);
 
 const idSchema = Joi.number().integer().positive().required();
 
@@ -250,118 +255,124 @@ const idSchema = Joi.number().integer().positive().required();
  */
 
 router.post(
-    '/users',
-    validate({
-        body: Joi.object({
-            name: Joi.string().min(3).max(30).required(),
-            email: Joi.string().email().required(),
-            password: Joi.string().min(6).required(),
-            phone: Joi.string().allow('').optional(),
-            document_type: Joi.string().valid('CPF', 'CNPJ').required(),
-            document_number: Joi.string().required(),
-            is_admin: Joi.number().optional(),
-        }),
+  "/users",
+  validate({
+    body: Joi.object({
+      name: Joi.string().min(3).max(30).required(),
+      email: Joi.string().email().required(),
+      password: Joi.string().min(6).required(),
+      phone: Joi.string().allow("").optional(),
+      document_type: Joi.string().valid("CPF", "CNPJ").required(),
+      document_number: Joi.string().required(),
+      is_admin: Joi.boolean().optional(),
     }),
-    async (req: Request, res: Response, next: NextFunction) => {
-        try {
-            logger.info('Iniciando cadastro de usuário.'); // Log de início
-            const input: SignUpDTO = req.body;
-            const result = await userService.signUp(input);
-            logger.info(`Usuário ${result.message} com token ${result.token}`); // Log de sucesso
-            res.status(201).json(result);
-        } catch (error: unknown) {
-            if (error instanceof Error) {
-                logger.error(`Erro ao cadastrar usuário: ${error.message}`, error);
-            } else {
-                logger.error('Erro desconhecido ao cadastrar usuário');
-            }
-            next(error);
-        }
+  }),
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      logger.info("Iniciando cadastro de usuário.");
+      const input: SignUpDTO = req.body;
+      const newUser = await userService.signUp(input);
+      logger.info(`Usuário criado com ID: ${newUser.message}`);
+      res
+        .status(201)
+        .json({
+          message: "Usuário cadastrado com sucesso!",
+          userId: newUser.message,
+        });
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        logger.error(`Erro ao cadastrar usuário: ${error.message}`, error);
+        next(error); // Propaga o erro para o middleware de tratamento de erros
+      } else {
+        logger.error("Erro desconhecido ao cadastrar usuário");
+        next(new Error("Erro desconhecido ao cadastrar usuário")); // Propaga um erro genérico
+      }
     }
+  }
 );
 
 router.get(
-    '/users/:id',
-    authenticateToken,
-    authorizeAdmin,
-    validate({ params: Joi.object({ id: idSchema }) }),
-    async (req: Request, res: Response, next: NextFunction) => {
-        try {
-            const id = Number(req.params.id);
-            logger.info(`Buscando usuário com ID: ${id}`);
-            const user = await userService.getUserById(id);
-            if (!user) {
-                logger.warn(`Usuário com ID ${id} não encontrado.`);
-                throw new NotFoundError("Usuário não encontrado.");
-            }
-            logger.info(`Usuário com ID ${id} encontrado.`);
-            res.json(user);
-        } catch (error: unknown) {
-            if (error instanceof Error) {
-                logger.error(`Erro ao buscar usuário: ${error.message}`, error);
-            } else {
-                logger.error('Erro desconhecido ao buscar usuário');
-            }
-            next(error);
-        }
+  "/users/:id",
+  authenticateToken,
+  authorizeAdmin,
+  validate({ params: Joi.object({ id: idSchema }) }),
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const id = Number(req.params.id);
+      logger.info(`Buscando usuário com ID: ${id}`);
+      const user = await userService.getUserById(id);
+      if (!user) {
+        logger.warn(`Usuário com ID ${id} não encontrado.`);
+        throw new NotFoundError("Usuário não encontrado.");
+      }
+      logger.info(`Usuário com ID ${id} encontrado.`);
+      res.json(user);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        logger.error(`Erro ao buscar usuário: ${error.message}`, error);
+      } else {
+        logger.error("Erro desconhecido ao buscar usuário");
+      }
+      next(error);
     }
+  }
 );
 
 router.put(
-    '/users/:id',
-    authenticateToken,
-    authorizeAdmin,
-    validate({
-        params: Joi.object({ id: idSchema }),
-        body: Joi.object({
-            name: Joi.string().min(3).max(30).optional().allow(''),
-            email: Joi.string().email().optional().allow(''),
-            password: Joi.string().min(6).optional().allow(''),
-            phone: Joi.string().optional().allow(''),
-            document_type: Joi.string().valid('CPF', 'CNPJ').optional().allow(''),
-            document_number: Joi.string().optional().allow(''),
-        }),
+  "/users/:id",
+  authenticateToken,
+  authorizeAdmin,
+  validate({
+    params: Joi.object({ id: idSchema }),
+    body: Joi.object({
+      name: Joi.string().min(3).max(30).optional().allow(""),
+      email: Joi.string().email().optional().allow(""),
+      password: Joi.string().min(6).optional().allow(""),
+      phone: Joi.string().optional().allow(""),
+      document_type: Joi.string().valid("CPF", "CNPJ").optional().allow(""),
+      document_number: Joi.string().optional().allow(""),
     }),
-    async (req: Request, res: Response, next: NextFunction) => {
-        try {
-            const id = Number(req.params.id);
-            const input = req.body;
-            logger.info(`Atualizando usuário com ID: ${id}`);
-            const updatedUser = await userService.updateUser(id, input);
-            logger.info(`Usuário com ID ${id} atualizado.`);
-            res.json(updatedUser);
-        } catch (error: unknown) {
-            if (error instanceof Error) {
-                logger.error(`Erro ao atualizar usuário: ${error.message}`, error);
-            } else {
-                logger.error('Erro desconhecido ao atualizar usuário');
-            }
-            next(error);
-        }
+  }),
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const id = Number(req.params.id);
+      const input = req.body;
+      logger.info(`Atualizando usuário com ID: ${id}`);
+      const updatedUser = await userService.updateUser(id, input);
+      logger.info(`Usuário com ID ${id} atualizado.`);
+      res.json(updatedUser);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        logger.error(`Erro ao atualizar usuário: ${error.message}`, error);
+      } else {
+        logger.error("Erro desconhecido ao atualizar usuário");
+      }
+      next(error);
     }
+  }
 );
 
 router.delete(
-    '/users/:id',
-    authenticateToken,
-    authorizeAdmin,
-    validate({ params: Joi.object({ id: idSchema }) }),
-    async (req: Request, res: Response, next: NextFunction) => {
-        try {
-            const id = Number(req.params.id);
-            logger.info(`Deletando usuário com ID: ${id}`);
-            await userService.deleteUserById(id);
-            logger.info(`Usuário com ID ${id} deletado.`);
-            res.status(204).send();
-        } catch (error: unknown) {
-            if (error instanceof Error) {
-                logger.error(`Erro ao deletar usuário: ${error.message}`, error);
-            } else {
-                logger.error('Erro desconhecido ao deletar usuário');
-            }
-            next(error);
-        }
+  "/users/:id",
+  authenticateToken,
+  authorizeAdmin,
+  validate({ params: Joi.object({ id: idSchema }) }),
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const id = Number(req.params.id);
+      logger.info(`Deletando usuário com ID: ${id}`);
+      await userService.deleteUserById(id);
+      logger.info(`Usuário com ID ${id} deletado.`);
+      res.status(204).send();
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        logger.error(`Erro ao deletar usuário: ${error.message}`, error);
+      } else {
+        logger.error("Erro desconhecido ao deletar usuário");
+      }
+      next(error);
     }
+  }
 );
 
 export default router;

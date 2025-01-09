@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { authenticateToken, authorizeRole } from '../middlewares/auth';
+import { authenticateToken, authorizeRoles } from '../middlewares/auth';
 import { validate } from '../middlewares/validation';
 import Joi from 'joi';
 
@@ -73,7 +73,7 @@ const router = Router();
 router.post(
   '/spaces',
   authenticateToken,
-  authorizeRole(['admin']),
+  authorizeRoles(['admin']),
   validate({
     body: Joi.object({
       name: Joi.string().min(3).max(50).required(),
@@ -151,7 +151,7 @@ router.get('/spaces/:id', authenticateToken, (req, res) => {
 router.put(
   '/spaces/:id',
   authenticateToken,
-  authorizeRole(['admin']),
+  authorizeRoles(['admin']),
   validate({
     body: Joi.object({
       name: Joi.string().min(3).max(50).optional(),
@@ -188,7 +188,7 @@ router.put(
  *       404:
  *         description: Espaço não encontrado
  */
-router.delete('/spaces/:id', authenticateToken, authorizeRole(['admin']), (req, res) => {
+router.delete('/spaces/:id', authenticateToken, authorizeRoles(['admin']), (req, res) => {
   // Lógica para deletar um espaço pelo ID
   const spaceId = req.params.id;
   res.json({ message: `Espaço com ID ${spaceId} deletado com sucesso` });

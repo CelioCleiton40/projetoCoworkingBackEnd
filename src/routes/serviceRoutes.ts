@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { authenticateToken, authorizeRole } from '../middlewares/auth';
+import { authenticateToken, authorizeRoles } from '../middlewares/auth';
 import { validate } from '../middlewares/validation';
 import Joi from 'joi';
 
@@ -68,7 +68,7 @@ const router = Router();
 router.post(
   '/services',
   authenticateToken,
-  authorizeRole(['admin']),
+  authorizeRoles(['admin']),
   validate({
     body: Joi.object({
       name: Joi.string().min(3).max(50).required(),
@@ -145,7 +145,7 @@ router.get('/services/:id', authenticateToken, (req, res) => {
 router.put(
   '/services/:id',
   authenticateToken,
-  authorizeRole(['admin']),
+  authorizeRoles(['admin']),
   validate({
     body: Joi.object({
       name: Joi.string().min(3).max(50).optional(),
@@ -181,7 +181,7 @@ router.put(
  *       404:
  *         description: Serviço não encontrado
  */
-router.delete('/services/:id', authenticateToken, authorizeRole(['admin']), (req, res) => {
+router.delete('/services/:id', authenticateToken, authorizeRoles(['admin']), (req, res) => {
   // Lógica para deletar um serviço pelo ID
   const serviceId = req.params.id;
   res.json({ message: `Serviço com ID ${serviceId} deletado com sucesso` });

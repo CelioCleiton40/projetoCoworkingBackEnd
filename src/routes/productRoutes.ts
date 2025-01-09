@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { authenticateToken, authorizeRole } from '../middlewares/auth';
+import { authenticateToken, authorizeRoles } from '../middlewares/auth';
 import { validate } from '../middlewares/validation';
 import Joi from 'joi';
 
@@ -65,7 +65,7 @@ const router = Router();
 router.post(
   '/products',
   authenticateToken,
-  authorizeRole(['admin']),
+  authorizeRoles(['admin']),
   validate({
     body: Joi.object({
       name: Joi.string().min(3).max(50).required(),
@@ -141,7 +141,7 @@ router.get('/products/:id', authenticateToken, (req, res) => {
 router.put(
   '/products/:id',
   authenticateToken,
-  authorizeRole(['admin']),
+  authorizeRoles(['admin']),
   validate({
     body: Joi.object({
       name: Joi.string().min(3).max(50).optional(),
@@ -176,7 +176,7 @@ router.put(
  *       404:
  *         description: Produto não encontrado
  */
-router.delete('/products/:id', authenticateToken, authorizeRole(['admin']), (req, res) => {
+router.delete('/products/:id', authenticateToken, authorizeRoles(['admin']), (req, res) => {
   // Lógica para deletar um produto pelo ID
   const productId = req.params.id;
   res.json({ message: `Produto com ID ${productId} deletado com sucesso` });

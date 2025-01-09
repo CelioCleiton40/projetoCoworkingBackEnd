@@ -1,6 +1,7 @@
 import { UserService } from "../services/UserService";
 import { Request, Response } from "express";
 import { UserDTO } from "../dtos/userDTO";
+import logger from "../utils/logger"; // Certifique-se de importar seu logger corretamente
 
 export class UserController {
     constructor(
@@ -20,16 +21,16 @@ export class UserController {
             res.status(200).send(output);
 
         } catch (error) {
-            console.log(error);
+            logger.error(error);
 
-            if (req.statusCode === 200) {
+            if (res.statusCode === 200) {
                 res.status(500);
             }
 
             if (error instanceof Error) {
-                res.send(error.message);
+                res.send({ error: error.message });
             } else {
-                res.send("Erro inesperado");
+                res.send({ error: "Erro inesperado" });
             }
         }
     }
@@ -45,16 +46,16 @@ export class UserController {
             res.status(201).send(output);
 
         } catch (error) {
-            console.log(error);
+            logger.error(error);
 
-            if (req.statusCode === 200) {
+            if (res.statusCode === 200) {
                 res.status(500);
             }
 
             if (error instanceof Error) {
-                res.send(error.message);
+                res.send({ error: error.message });
             } else {
-                res.send("Erro inesperado");
+                res.send({ error: "Erro inesperado" });
             }
         }
     }
@@ -69,16 +70,16 @@ export class UserController {
             res.status(200).send(output);
 
         } catch (error) {
-            console.log(error);
+            logger.error(error);
 
-            if (req.statusCode === 200) {
+            if (res.statusCode === 200) {
                 res.status(500);
             }
 
             if (error instanceof Error) {
-                res.send(error.message);
+                res.send({ error: error.message });
             } else {
-                res.send("Erro inesperado");
+                res.send({ error: "Erro inesperado" });
             }
         }
     }

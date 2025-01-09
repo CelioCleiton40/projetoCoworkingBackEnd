@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import Joi from 'joi';
+import logger from '../utils/logger'; // Certifique-se de importar seu logger corretamente
 
 interface ValidationSchema {
   body?: Joi.ObjectSchema;
@@ -7,11 +8,18 @@ interface ValidationSchema {
   params?: Joi.ObjectSchema;
 }
 
+const validateSchema = (schema: Joi.ObjectSchema | undefined, data: any, type: string): Joi.ValidationError | null => {
+  if (!schema) return null;
+  const { error } = schema.validate(data);
+  if (error) logger.warn(`Erro de validação no ${type}:`, error.details);
+  return error || null;
+};
+
 export const validate = (schema: ValidationSchema) => {
   return (req: Request, res: Response, next: NextFunction): void => {
-    const { error: bodyError } = schema.body?.validate(req.body) || { error: null };
-    const { error: queryError } = schema.query?.validate(req.query) || { error: null };
-    const { error: paramsError } = schema.params?.validate(req.params) || { error: null };
+    const bodyError = validateSchema(schema.body, req.body, 'corpo');
+    const queryError = validateSchema(schema.query, req.query, 'query');
+    const paramsError = validateSchema(schema.params, req.params, 'parâmetros');
 
     if (bodyError || queryError || paramsError) {
       res.status(400).json({

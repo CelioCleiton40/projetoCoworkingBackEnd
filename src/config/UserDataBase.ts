@@ -23,14 +23,12 @@ export class UserDatabase extends BaseDatabase {
     updatedData: Partial<User>
   ): Promise<void> {
     try {
-      const user: User[] = await BaseDatabase.connection(
-        UserDatabase.TABLE_USERS
-      )
+      await BaseDatabase.connection(UserDatabase.TABLE_USERS)
         .where({ id })
         .update(updatedData);
-    } catch (error) {
-      console.error("Erro ao atualizar usuário no banco de dados:", error);
-      throw error; // Importante: re-lançar o erro
+    } catch (error: any) {
+      logger.error(`Erro ao atualizar usuário no banco de dados: ${error.message}`);
+      throw new Error("Falha ao atualizar usuário.");
     }
   }
 
@@ -90,9 +88,7 @@ export class UserDatabase extends BaseDatabase {
         .where({ email })
         .del(); // Método del() do Knex.js para DELETE
     } catch (error: any) {
-      logger.error(
-        `Erro ao deletar usuário com email ${email}: ${error.message}`
-      );
+      logger.error(`Erro ao deletar usuário com email ${email}: ${error.message}`);
       throw new Error("Falha ao deletar usuário.");
     }
   }
