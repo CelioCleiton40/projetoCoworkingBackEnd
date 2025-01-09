@@ -1,5 +1,6 @@
+
 export interface User {
-  id?: number;
+  id?: number | string;
   name: string;
   email: string;
   password_hash: string;
@@ -57,4 +58,10 @@ export interface Service {
   available?: boolean;
   created_at?: string;
   updated_at?: string;
+}
+
+export interface TokenPayload {
+  id: string,
+name: string,
+is_admin?: boolean;
 }

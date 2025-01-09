@@ -1,53 +1,85 @@
-import { Request, Response } from 'express';
-import UserService from '../services/UserService';
+import { UserService } from "../services/UserService";
+import { Request, Response } from "express";
+import { UserDTO } from "../dtos/userDTO";
 
-class UserController {
-  public async create(req: Request, res: Response): Promise<void> {
-    try {
-      const user = await UserService.createUser(req.body);
-      res.status(201).json(user);
-    } catch (error) {
-      res.status(400).json({ error: (error as Error).message });
-    }
-  }
+export class UserController {
+    constructor(
+        private userBusiness: UserService,
+        private userDTO: UserDTO,
+    ) {}
 
-  public async getUserById(req: Request, res: Response): Promise<void> {
-    try {
-      const { id } = req.params;
-      const user = await UserService.getUserById(Number(id));
-      if (user) {
-        res.json(user);
-      } else {
-        res.status(404).json({ error: 'Usuário não encontrado' });
-      }
-    } catch (error) {
-      res.status(400).json({ error: (error as Error).message });
-    }
-  }
+    public getAllUsers = async (req: Request, res: Response) => {
+        try {
+            const input = this.userDTO.getAllUsersInput(
+                req.query.q as string,
+                req.headers.authorization as string
+            );
 
-  public async update(req: Request, res: Response): Promise<void> {
-    try {
-      const { id } = req.params;
-      const updatedUser = await UserService.updateUser(Number(id), req.body);
-      if (updatedUser) {
-        res.json(updatedUser);
-      } else {
-        res.status(404).json({ error: 'Usuário não encontrado' });
-      }
-    } catch (error) {
-      res.status(400).json({ error: (error as Error).message });
-    }
-  }
+            const output = await this.userBusiness.getAllUsers(input);
 
-  public async delete(req: Request, res: Response): Promise<void> {
-    try {
-      const { id } = req.params;
-      await UserService.deleteUser(Number(id));
-      res.json({ message: 'Usuário deletado com sucesso' });
-    } catch (error) {
-      res.status(400).json({ error: (error as Error).message });
+            res.status(200).send(output);
+
+        } catch (error) {
+            console.log(error);
+
+            if (req.statusCode === 200) {
+                res.status(500);
+            }
+
+            if (error instanceof Error) {
+                res.send(error.message);
+            } else {
+                res.send("Erro inesperado");
+            }
+        }
     }
-  }
+
+    public signUp = async (req: Request, res: Response) => {
+        try {
+            const { name, email, password, phone, document_type, document_number, is_admin } = req.body;
+
+            const input = this.userDTO.signUp(name, email, password, phone, document_type, document_number, is_admin);
+
+            const output = await this.userBusiness.signUp(input);
+
+            res.status(201).send(output);
+
+        } catch (error) {
+            console.log(error);
+
+            if (req.statusCode === 200) {
+                res.status(500);
+            }
+
+            if (error instanceof Error) {
+                res.send(error.message);
+            } else {
+                res.send("Erro inesperado");
+            }
+        }
+    }
+
+    public login = async (req: Request, res: Response) => {
+        try {
+            const { email, password } = req.body;
+
+            const input = this.userDTO.login(email, password);
+            const output = await this.userBusiness.login(input);
+
+            res.status(200).send(output);
+
+        } catch (error) {
+            console.log(error);
+
+            if (req.statusCode === 200) {
+                res.status(500);
+            }
+
+            if (error instanceof Error) {
+                res.send(error.message);
+            } else {
+                res.send("Erro inesperado");
+            }
+        }
+    }
 }
-
-export default new UserController();

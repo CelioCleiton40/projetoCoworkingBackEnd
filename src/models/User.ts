@@ -1,57 +1,62 @@
-import DatabaseConnection from '../config/database';
-import { User } from '@/types';
+import { User } from "../types";
 
-const db = new DatabaseConnection();
+export class UserMD {
+    constructor(
+        private id: number | string,
+        private name: string,
+        private email: string,
+        private password: string,
+        private phone: string | undefined,
+        private document_type: string | undefined,
+        private document_number: string | undefined,
+        private is_admin: boolean,
+        private created_at: string,
+        private updated_at: string
+    ){}
 
-class UserModel {
-  public async create(user: User): Promise<User> {
-    const query = `
-      INSERT INTO users (name, email, password_hash, phone, document_type, document_number, is_admin, created_at, updated_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))`;
-    const { id } = await db.run(query, [
-      user.name,
-      user.email,
-      user.password_hash,
-      user.phone,
-      user.document_type,
-      user.document_number,
-      user.is_admin || false
-    ]);
-    return { id, ...user, is_admin: user.is_admin || false, created_at: new Date().toISOString(), updated_at: new Date().toISOString() };
-  }
+    public toDBModel(): User {
+        return {
+            id: this.id,
+            name: this.name,
+            email: this.email,
+            password_hash: this.password,
+            phone: this.phone,
+            document_type: this.document_type,
+            document_number: this.document_number,
+            is_admin: this.is_admin,
+            created_at: this.created_at,
+            updated_at: this.updated_at
+        };
+    }
 
-  public async getById(id: number): Promise<User | undefined> {
-    const user = await db.get<User>(`SELECT * FROM users WHERE id = ?`, [id]);
-    return user;
-  }
+    // Getters and Setters
+    public getId(): number | string { return this.id; }
+    public setId(value: number): void { this.id = value; }
 
-  public async getAll(): Promise<User[]> {
-    const users = await db.all<User>(`SELECT * FROM users`);
-    return users;
-  }
+    public getName(): string { return this.name; }
+    public setName(value: string): void { this.name = value; }
 
-  public async update(id: number, user: Partial<User>): Promise<User | undefined> {
-    const query = `
-      UPDATE users
-      SET name = ?, email = ?, password_hash = ?, phone = ?, document_type = ?, document_number = ?, is_admin = ?, updated_at = datetime('now')
-      WHERE id = ?`;
-    await db.run(query, [
-      user.name,
-      user.email,
-      user.password_hash,
-      user.phone,
-      user.document_type,
-      user.document_number,
-      user.is_admin,
-      id
-    ]);
-    const updatedUser = await this.getById(id);
-    return updatedUser;
-  }
+    public getEmail(): string { return this.email; }
+    public setEmail(value: string): void { this.email = value; }
 
-  public async delete(id: number): Promise<void> {
-    await db.run(`DELETE FROM users WHERE id = ?`, [id]);
-  }
+    public getPassword(): string { return this.password; }
+    public setPassword(value: string): void { this.password = value; }
+
+    public getPhone(): string | undefined { return this.phone; }
+    public setPhone(value: string | undefined): void { this.phone = value; }
+
+    public getDocumentType(): string | undefined { return this.document_type; }
+    public setDocumentType(value: string | undefined): void { this.document_type = value; }
+
+    public getDocumentNumber(): string | undefined { return this.document_number; }
+    public setDocumentNumber(value: string | undefined): void { this.document_number = value; }
+
+    public getIsAdmin(): boolean { return this.is_admin; }
+    public setIsAdmin(value: boolean): void { this.is_admin = value; }
+
+    public getCreatedAt(): string { return this.created_at; }
+    public setCreatedAt(value: string): void { this.created_at = value; }
+
+    public getUpdatedAt(): string { return this.updated_at; }
+    public setUpdatedAt(value: string): void { this.updated_at = value; }
 }
-
-export default new UserModel();

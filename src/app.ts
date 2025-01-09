@@ -10,4 +10,5 @@ app.use(express.json()); // Middleware para analisar corpos de requisição JSON
 // Usa as rotas definidas no arquivo index.ts da pasta routes
 app.use('/api', routes);
 
+
 export default app;
