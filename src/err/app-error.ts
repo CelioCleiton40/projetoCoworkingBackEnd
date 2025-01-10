@@ -44,3 +44,9 @@ export class InternalServerError extends AppError {
         super(message, 500); // 500 Internal Server Error
     }
 }
+
+export class ErrorHandler extends AppError {
+    constructor(message: string) {
+        super(message, 500); // 500 Internal Server Error
+    }
+}

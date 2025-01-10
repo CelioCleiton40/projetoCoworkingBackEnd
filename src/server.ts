@@ -6,19 +6,28 @@ import logger from './utils/logger'; // Importa o logger
 
 const PORT = process.env.PORT || 3333;
 
-async function startServer() { // Função assíncrona para lidar com erros
+async function startServer() {
     try {
+        // Verificação para garantir que a variável PORT esteja configurada corretamente
+        if (!process.env.PORT) {
+            throw new Error("A variável de ambiente PORT não está definida.");
+        }
+
         // Configura a documentação Swagger
         await setupSwagger(app); // Aguarda a configuração do Swagger
 
         // Inicia o servidor
         app.listen(PORT, () => {
-            logger.info(`Servidor iniciado na porta ${PORT}`); // Log mais informativo
+            logger.info(`Servidor iniciado na porta ${PORT}`);
             logger.info(`Documentação da API disponível em http://localhost:${PORT}/api-docs`);
         });
-    } catch (error) {
-        const err = error as Error;
-        logger.error(`Erro ao iniciar o servidor: ${err.message}`, err); // Log de erro detalhado
+    } catch (error: any) {
+        // Tipagem explícita para garantir que 'error' seja tratado como um objeto Error
+        if (error instanceof Error) {
+            logger.error(`Erro ao iniciar o servidor: ${error.message}`, { stack: error.stack });
+        } else {
+            logger.error("Erro desconhecido ao iniciar o servidor.");
+        }
         process.exit(1); // Encerra o processo com código de erro
     }
 }

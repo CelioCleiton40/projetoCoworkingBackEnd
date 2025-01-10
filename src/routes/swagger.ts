@@ -54,9 +54,6 @@ const router = Router();
  *       400:
  *         description: Erro de validação
  */
-router.post('/users', (req, res) => {
-  // Lógica para criar um novo usuário
-  res.json({ message: 'Usuário criado com sucesso', user: req.body });
-});
+
 
 export default router;

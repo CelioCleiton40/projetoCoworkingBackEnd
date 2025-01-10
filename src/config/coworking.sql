@@ -1,3 +1,4 @@
+-- Active: 1736455254455@@127.0.0.1@3306
 -- Ativa o suporte a chaves estrangeiras
 PRAGMA foreign_keys = ON;
 
